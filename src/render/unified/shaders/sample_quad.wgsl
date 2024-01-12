@@ -1,14 +1,22 @@
 #define_import_path kayak_ui::sample_quad
 
-#import kayak_ui::bindings::{font_texture, font_sampler, image_texture, image_sampler, quad_type}
+#import kayak_ui::bindings font_texture, font_sampler, image_texture, image_sampler, quad_type
 
-#import kayak_ui::vertex_output::VertexOutput
+#import kayak_ui::vertex_output VertexOutput
 
 // Where P is the position in pixel space, B is the size of the box adn R is the radius of the current corner.
 fn sdRoundBox(p: vec2<f32>, b: vec2<f32>, r: f32) -> f32 {
     var q = abs(p) - b + r;
     return min(max(q.x, q.y), 0.0) + length(max(q, vec2<f32>(0.0))) - r;
 }
+
+fn sdLineSegment(p: vec2<f32>, a: vec2<f32>, b: vec2<f32>) -> f32 {
+    let ba: vec2<f32> = b - a;
+    let pa: vec2<f32> = p - a;
+    let h: f32 = clamp(dot(pa, ba) / dot(ba, ba), 0.0, 1.0);
+    return length(pa - h * ba);
+}
+
 
 fn median_three(v: vec3<f32>) -> f32 {
     return max(min(v.x, v.y), min(max(v.x, v.y), v.z));
@@ -63,10 +71,18 @@ fn sample_quad(in: VertexOutput) -> vec4<f32> {
     // Text
     if quad_type.t == 2 {
         var px_range = 8.0;
+        let uv_slope = 0.1;
         var tex_dimensions = textureDimensions(font_texture);
-        let sd = sample_sdf(vec2(in.uv.x, 1.0 - in.uv.y), i32(in.uv.z), 0.0);
-        let dxdy = fwidth(in.uv.xy) * vec2(f32(tex_dimensions.x), f32(tex_dimensions.y));
-        let dist = sd + min(0.001, 0.5 - 1.0 / px_range) - 0.5;
+        let uv = in.uv + vec3<f32>(-uv_slope * in.uv.y, 0.0, 0.0);
+        let sd = sample_sdf(vec2(uv.x, 1.0 - uv.y), i32(uv.z), 0.0);
+        let dxdy = fwidth(uv.xy) * vec2(f32(tex_dimensions.x), f32(tex_dimensions.y));
+        let bold = -0.2; // in.border_radius;
+        // let line = sdLineSegment(in.uv.xy, vec2<f32>(0.0, f32(tex_dimensions.y)), vec2<f32>(1.0, f32(tex_dimensions.y))) + 0.1;
+        let line_height = 0.5; //. * in.pos.y;// * 2.0;
+        let line = -sdLineSegment(in.uv.xy, vec2<f32>(0.0, line_height), vec2<f32>(1.0, line_height)) + 0.02;
+        var dist = sd + min(0.001, 0.5 - 1.0 / px_range) - 0.5 - bold;
+        dist = max(dist, line);
+
         let alpha = clamp(dist * px_range / length(dxdy) + 0.5, 0.0, 1.0);
         output_color = vec4(in.color.rgb, in.color.a * alpha);
     }

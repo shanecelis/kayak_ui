@@ -49,7 +49,7 @@ fn startup(
                 }}
                 text={TextProps {
                     content: "Hello Shader!".into(),
-                    size: 20.0,
+                    size: 100.0,
                     ..Default::default()
                 }}
             />
