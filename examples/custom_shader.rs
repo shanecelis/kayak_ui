@@ -2,6 +2,7 @@ use bevy::{
     prelude::*,
     reflect::TypePath,
     render::render_resource::AsBindGroup,
+    asset::{AssetServer, embedded_asset, embedded_path},
 };
 use kayak_ui::{
     prelude::{widgets::*, *},
@@ -12,7 +13,12 @@ use kayak_ui::{
 pub struct MyUIMaterial {}
 impl MaterialUI for MyUIMaterial {
     fn fragment_shader() -> bevy::render::render_resource::ShaderRef {
-        "rainbow_shader.wgsl".into()
+        // "rainbow_shader.wgsl".into()
+        // "embedded://custom_shader/rainbow_embed.wgsl".into()
+        // "embedded://custom_shader/examples/rainbow_embed.wgsl".into()
+        // "embedded://kayak_ui/examples/rainbow_embed.wgsl".into()
+        // "embedded://kayak_ui/examples/rainbow_embed.wgsl".into()
+        "embedded://custom_shader/rainbow_embed.wgsl".into()
     }
 }
 
@@ -44,6 +50,7 @@ fn startup(
                     top: Units::Pixels(5.0).into(),
                     material: MaterialHandle::new(move |commands, entity| {
                         commands.entity(entity).insert(my_material_handle.clone_weak());
+                        // commands.entity(entity).insert(my_material_handle.clone());
                     }).into(),
                     ..Default::default()
                 }}
@@ -59,14 +66,38 @@ fn startup(
     commands.spawn((widget_context, EventDispatcher::default()));
 }
 
+fn keyboard_input(
+    keys: Res<Input<KeyCode>>,
+    mut asset_server: ResMut<AssetServer>,
+) {
+    if keys.just_pressed(KeyCode::Space) {
+        // Space was pressed
+        eprintln!("reload sample quad");
+
+        asset_server.reload("embedded://custom_shader/rainbow_embed.wgsl");
+        // asset_server.reload("embedded://kayak_ui/render/unified/shaders/sample_quad.wgsl");
+        // asset_server.reload("rainbow_shader.wgsl");
+    }
+}
+
 fn main() {
-    App::new()
-        .add_plugins(DefaultPlugins)
+    let mut app = App::new();
+    app
+        .add_plugins(DefaultPlugins);
+    // BUG
+    // embedded_asset!(app, "examples", "rainbow_embed.wgsl");
+    embedded_asset!(app, "examples/", "rainbow_embed.wgsl");
+    // dbg!(embedded_path!("examples/", "rainbow_embed.wgsl"));
+
+    app
         .add_plugins((
             KayakContextPlugin,
             KayakWidgets,
             MaterialUIPlugin::<MyUIMaterial>::default(),
         ))
         .add_systems(Startup, startup)
+        .add_systems(Update, keyboard_input);
+
+    app
         .run()
 }

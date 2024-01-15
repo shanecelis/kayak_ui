@@ -1,9 +1,8 @@
 #define_import_path kayak_ui::sample_quad
 
-#import kayak_ui::bindings font_texture, font_sampler, image_texture, image_sampler, quad_type
+#import kayak_ui::bindings::{font_texture, font_sampler, image_texture, image_sampler, quad_type}
 
-#import kayak_ui::vertex_output VertexOutput
-
+#import kayak_ui::vertex_output::VertexOutput
 // Where P is the position in pixel space, B is the size of the box adn R is the radius of the current corner.
 fn sdRoundBox(p: vec2<f32>, b: vec2<f32>, r: f32) -> f32 {
     var q = abs(p) - b + r;
@@ -33,6 +32,7 @@ fn range_curve(font_size: f32) -> f32 {
 
 fn sigmoid(t: f32) -> f32 {
     return 1.0 / (1.0 + exp(-t));
+
 }
 
 fn sample_quad(in: VertexOutput) -> vec4<f32> {
@@ -78,7 +78,7 @@ fn sample_quad(in: VertexOutput) -> vec4<f32> {
         let dxdy = fwidth(uv.xy) * vec2(f32(tex_dimensions.x), f32(tex_dimensions.y));
         let bold = -0.2; // in.border_radius;
         // let line = sdLineSegment(in.uv.xy, vec2<f32>(0.0, f32(tex_dimensions.y)), vec2<f32>(1.0, f32(tex_dimensions.y))) + 0.1;
-        let line_height = 0.5; //. * in.pos.y;// * 2.0;
+        let line_height = 0.7; //. * in.pos.y;// * 2.0;
         let line = -sdLineSegment(in.uv.xy, vec2<f32>(0.0, line_height), vec2<f32>(1.0, line_height)) + 0.02;
         var dist = sd + min(0.001, 0.5 - 1.0 / px_range) - 0.5 - bold;
         dist = max(dist, line);

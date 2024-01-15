@@ -1,4 +1,5 @@
 use bevy::prelude::{Component, Entity, Query, Reflect, ReflectComponent};
+use bevy::asset::Asset;
 
 use crate::styles::{KStyle, StyleProp};
 
@@ -6,7 +7,7 @@ use crate::styles::{KStyle, StyleProp};
 pub struct DirtyNode;
 
 /// A widget node used for building the layout tree
-#[derive(Debug, Reflect, Clone, PartialEq, Component)]
+#[derive(Debug, Reflect, Clone, PartialEq, Component, Asset)]
 #[reflect(Component)]
 pub struct Node {
     /// The list of children directly under this node

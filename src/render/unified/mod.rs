@@ -9,7 +9,7 @@ use bevy::{
         renderer::{RenderDevice, RenderQueue},
         Extract, ExtractSchedule, Render, RenderApp, RenderSet,
     },
-    window::{PrimaryWindow, Window}, asset::{Handle, load_internal_asset, AssetApp},
+    window::{PrimaryWindow, Window}, asset::{Handle, load_internal_asset, AssetApp, embedded_asset},
 };
 use bevy_svg::prelude::Svg;
 
@@ -31,47 +31,54 @@ use super::{svg::RenderSvgs, ui_pass::TransparentOpacityUI};
 pub mod pipeline;
 pub mod text;
 
-pub const UNIFIED_SHADER_HANDLE: Handle<Shader> =
-Handle::weak_from_u128(7604018236855288450);
+// pub const UNIFIED_SHADER_HANDLE: Handle<Shader> =
+// Handle::weak_from_u128(7604018236855288450);
 
-pub const UNIFIED_BINDINGS_HANDLE: Handle<Shader> =
-Handle::weak_from_u128(13885898746900949245);
+// pub const UNIFIED_BINDINGS_HANDLE: Handle<Shader> =
+// Handle::weak_from_u128(13885898746900949245);
 
-pub const SAMPLE_QUAD_HANDLE: Handle<Shader> =
-Handle::weak_from_u128(5975018398368429820);
+// pub const SAMPLE_QUAD_HANDLE: Handle<Shader> =
+// Handle::weak_from_u128(5975018398368429820);
 
-pub const VERTEX_OUTPUT_HANDLE: Handle<Shader> =
-Handle::weak_from_u128(8828896277688845893);
+// pub const VERTEX_OUTPUT_HANDLE: Handle<Shader> =
+// Handle::weak_from_u128(8828896277688845893);
 
 pub struct UnifiedRenderPlugin;
 impl Plugin for UnifiedRenderPlugin {
     fn build(&self, app: &mut bevy::prelude::App) {
         app.init_asset::<Svg>().add_plugins(text::TextRendererPlugin);
 
-        load_internal_asset!(
-            app,
-            UNIFIED_BINDINGS_HANDLE,
-            "shaders/bindings.wgsl",
-            Shader::from_wgsl
-        );
-        load_internal_asset!(
-            app,
-            SAMPLE_QUAD_HANDLE,
-            "shaders/sample_quad.wgsl",
-            Shader::from_wgsl
-        );
-        load_internal_asset!(
-            app,
-            VERTEX_OUTPUT_HANDLE,
-            "shaders/vertex_output.wgsl",
-            Shader::from_wgsl
-        );
-        load_internal_asset!(
-            app,
-            UNIFIED_SHADER_HANDLE,
-            "shaders/shader.wgsl",
-            Shader::from_wgsl
-        );
+        // load_internal_asset!(
+        //     app,
+        //     UNIFIED_BINDINGS_HANDLE,
+        //     "shaders/bindings.wgsl",
+        //     Shader::from_wgsl
+        // );
+
+        embedded_asset!(app, "src/", "shaders/bindings.wgsl");
+        embedded_asset!(app, "src/", "shaders/sample_quad.wgsl");
+
+        // load_internal_asset!(
+        //     app,
+        //     SAMPLE_QUAD_HANDLE,
+        //     "shaders/sample_quad.wgsl",
+        //     Shader::from_wgsl
+        // );
+        // load_internal_asset!(
+        //     app,
+        //     VERTEX_OUTPUT_HANDLE,
+        //     "shaders/vertex_output.wgsl",
+        //     Shader::from_wgsl
+        // );
+
+        embedded_asset!(app, "src/", "shaders/vertex_output.wgsl");
+        embedded_asset!(app, "src/", "shaders/shader.wgsl");
+        // load_internal_asset!(
+        //     app,
+        //     UNIFIED_SHADER_HANDLE,
+        //     "shaders/shader.wgsl",
+        //     Shader::from_wgsl
+        // );
     }
 
     fn finish(&self, app: &mut bevy::prelude::App) {

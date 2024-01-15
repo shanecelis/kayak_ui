@@ -1,4 +1,5 @@
 use bevy::ecs::query::ROQueryItem;
+use bevy::asset::AssetServer;
 use bevy::ecs::system::{SystemParam, SystemParamItem};
 use bevy::prelude::{Commands, Mesh, Rect, Resource, Vec3, With};
 use bevy::render::globals::{GlobalsBuffer, GlobalsUniform};
@@ -28,7 +29,7 @@ use bevy::{
             PrimitiveTopology, RenderPipelineDescriptor, SamplerBindingType, SamplerDescriptor,
             ShaderStages, TextureDescriptor, TextureDimension, TextureFormat, TextureSampleType,
             TextureUsages, TextureViewDescriptor, TextureViewDimension, VertexAttribute,
-            VertexBufferLayout, VertexFormat, VertexState, VertexStepMode,
+            VertexBufferLayout, VertexFormat, VertexState, VertexStepMode, Shader
         },
         renderer::{RenderDevice, RenderQueue},
         texture::{BevyDefault, GpuImage, Image},
@@ -40,7 +41,7 @@ use bytemuck::{Pod, Zeroable};
 use kayak_font::{bevy::FontTextureCache, KayakFont};
 use std::marker::PhantomData;
 
-use super::UNIFIED_SHADER_HANDLE;
+// use super::UNIFIED_SHADER_HANDLE;
 use crate::layout::LayoutCache;
 use crate::prelude::{Corner, Tree};
 use crate::render::extract::{UIExtractedView, UIViewUniform, UIViewUniformOffset, UIViewUniforms};
@@ -57,6 +58,10 @@ pub struct UnifiedPipeline {
     pub image_layout: BindGroupLayout,
     empty_font_texture: GpuImage,
     default_image: (GpuImage, BindGroup),
+    unified_shader: Handle<Shader>,
+    vertex_output_shader: Handle<Shader>,
+    bindings_shader: Handle<Shader>,
+    sample_quad_shader: Handle<Shader>,
 }
 
 // const QUAD_VERTEX_POSITIONS: &[Vec3] = &[
@@ -87,7 +92,11 @@ impl FromWorld for UnifiedPipeline {
     fn from_world(world: &mut World) -> Self {
         let world = world.cell();
         let render_device = world.resource::<RenderDevice>();
-
+        let asset_server = world.resource_mut::<AssetServer>();
+        let vertex_output_shader: Handle<Shader> = asset_server.load("embedded://kayak_ui/render/unified/shaders/vertex_output.wgsl");
+        let unified_shader: Handle<Shader> = asset_server.load("embedded://kayak_ui/render/unified/shaders/shader.wgsl");
+        let bindings_shader: Handle<Shader> = asset_server.load("embedded://kayak_ui/render/unified/shaders/bindings.wgsl");
+        let sample_quad_shader: Handle<Shader> = asset_server.load("embedded://kayak_ui/render/unified/shaders/sample_quad.wgsl");
         let view_layout = render_device.create_bind_group_layout(&BindGroupLayoutDescriptor {
             entries: &[
                 BindGroupLayoutEntry {
@@ -239,6 +248,10 @@ impl FromWorld for UnifiedPipeline {
             types_layout,
             image_layout,
             default_image: (image, binding),
+            unified_shader,
+            vertex_output_shader,
+            bindings_shader,
+            sample_quad_shader,
         }
     }
 }
@@ -273,16 +286,15 @@ impl SpecializedRenderPipeline for UnifiedPipeline {
                 },
             ],
         };
-
         RenderPipelineDescriptor {
             vertex: VertexState {
-                shader: UNIFIED_SHADER_HANDLE,
+                shader: self.unified_shader.clone(),
                 entry_point: "vertex".into(),
                 shader_defs: vec![],
                 buffers: vec![vertex_buffer_layout],
             },
             fragment: Some(FragmentState {
-                shader: UNIFIED_SHADER_HANDLE,
+                shader: self.unified_shader.clone(),
                 shader_defs: vec![],
                 entry_point: "fragment".into(),
                 targets: vec![Some(ColorTargetState {

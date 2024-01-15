@@ -2,6 +2,7 @@ use bevy::{
     prelude::*,
     reflect::TypePath,
     render::render_resource::AsBindGroup,
+    asset::embedded_asset,
 };
 use kayak_ui::prelude::{widgets::*, *};
 
@@ -158,7 +159,7 @@ fn startup(
 }
 
 fn main() {
-    App::new()
+    let app = App::new()
         .insert_resource(ClearColor(Color::rgb(0.0, 0.0, 0.0)))
         .add_plugins(DefaultPlugins)
         .add_plugins((
@@ -166,6 +167,8 @@ fn main() {
             KayakWidgets,
             MaterialUIPlugin::<MyUIMaterial>::default(),
         ))
-        .add_systems(Startup, startup)
+        .add_systems(Startup, startup);
+    // embedded_asset!(app, "examples/", "rainbow_shader.wgsl");
+    app
         .run()
 }

@@ -2,6 +2,8 @@
 
 #import kayak_ui::vertex_output::VertexOutput
 
+#import kayak_ui::sample_quad::sample_quad
+
 @vertex
 fn vertex(
     @location(0) vertex_position: vec3<f32>,
@@ -19,8 +21,6 @@ fn vertex(
     out.border_radius = vertex_uv.w;
     return out;
 }
-
-#import kayak_ui::sample_quad::sample_quad
 
 @fragment
 fn fragment(in: VertexOutput) -> @location(0) vec4<f32> {
