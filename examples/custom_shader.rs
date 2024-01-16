@@ -66,27 +66,13 @@ fn startup(
     commands.spawn((widget_context, EventDispatcher::default()));
 }
 
-fn keyboard_input(
-    keys: Res<Input<KeyCode>>,
-    mut asset_server: ResMut<AssetServer>,
-) {
-    if keys.just_pressed(KeyCode::Space) {
-        // Space was pressed
-        eprintln!("reload sample quad");
-
-        asset_server.reload("embedded://custom_shader/rainbow_embed.wgsl");
-        // asset_server.reload("embedded://kayak_ui/render/unified/shaders/sample_quad.wgsl");
-        // asset_server.reload("rainbow_shader.wgsl");
-    }
-}
-
 fn main() {
     let mut app = App::new();
     app
         .add_plugins(DefaultPlugins);
     // BUG
     // embedded_asset!(app, "examples", "rainbow_embed.wgsl");
-    embedded_asset!(app, "examples/", "rainbow_embed.wgsl");
+    embedded_asset!(app, "examples", "rainbow_embed.wgsl");
     // dbg!(embedded_path!("examples/", "rainbow_embed.wgsl"));
 
     app
@@ -95,8 +81,7 @@ fn main() {
             KayakWidgets,
             MaterialUIPlugin::<MyUIMaterial>::default(),
         ))
-        .add_systems(Startup, startup)
-        .add_systems(Update, keyboard_input);
+        .add_systems(Startup, startup);
 
     app
         .run()

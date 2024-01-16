@@ -158,7 +158,7 @@ pub fn extract_materials_ui<M: MaterialUI>(
     let mut removed = Vec::new();
     for event in events.read() {
         match event {
-            AssetEvent::Added { id } | AssetEvent::LoadedWithDependencies { id } | AssetEvent::Modified { id } => {
+            AssetEvent::Added { id } | AssetEvent::LoadedWithDependencies { id } | AssetEvent::Modified { id } | AssetEvent::Unused { id } => {
                 changed_assets.insert(*id);
             }
             AssetEvent::Removed { id } => {
@@ -282,14 +282,14 @@ pub type DrawMaterialUITransparent<M> = (
 pub struct SetMaterialBindGroup<M: MaterialUI, const I: usize>(PhantomData<M>);
 impl<P: PhaseItem, M: MaterialUI, const I: usize> RenderCommand<P> for SetMaterialBindGroup<M, I> {
     type Param = SRes<RenderMaterialsUI<M>>;
-    type ViewWorldQuery = ();
-    type ItemWorldQuery = Read<Handle<M>>;
+    type ViewData = ();
+    type ItemData = Read<Handle<M>>;
 
     #[inline]
     fn render<'w>(
         _item: &P,
         _view: (),
-        material2d_handle: ROQueryItem<'_, Self::ItemWorldQuery>,
+        material2d_handle: ROQueryItem<'_, Self::ItemData>,
         materials: SystemParamItem<'w, '_, Self::Param>,
         pass: &mut TrackedRenderPass<'w>,
     ) -> RenderCommandResult {

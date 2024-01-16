@@ -188,7 +188,7 @@ pub fn text_box_render(
                       mut state_query: Query<&mut TextBoxState>| {
                     match event.event_type {
                         EventType::KeyDown(key_event) => {
-                            if key_event.key() == KeyCode::Right {
+                            if key_event.key() == KeyCode::ArrowRight {
                                 if let Ok(mut state) = state_query.get_mut(state_entity) {
                                     if state.cursor_position < state.graphemes.len() {
                                         state.cursor_position += 1;
@@ -201,7 +201,7 @@ pub fn text_box_render(
                                     );
                                 }
                             }
-                            if key_event.key() == KeyCode::Left {
+                            if key_event.key() == KeyCode::ArrowLeft {
                                 if let Ok(mut state) = state_query.get_mut(state_entity) {
                                     if state.cursor_position > 0 {
                                         state.cursor_position -= 1;

@@ -12,6 +12,6 @@ fn hsv2rgb(c: vec3<f32>) -> vec3<f32>
 @fragment
 fn fragment(in: VertexOutput) -> @location(0) vec4<f32> {
     var output_color = sample_quad(in);
-    let hsv = vec3(abs(sin(1. * globals.time)), 1.0, 1.0);
+    let hsv = vec3(abs(sin(0. * globals.time)), 1.0, 1.0);
     return vec4(hsv2rgb(hsv), output_color.a);
 }

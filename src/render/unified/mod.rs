@@ -5,11 +5,11 @@ use bevy::{
     },
     render::{
         render_phase::AddRenderCommand,
-        render_resource::{Shader, SpecializedRenderPipelines},
+        render_resource::{SpecializedRenderPipelines},
         renderer::{RenderDevice, RenderQueue},
         Extract, ExtractSchedule, Render, RenderApp, RenderSet,
     },
-    window::{PrimaryWindow, Window}, asset::{Handle, load_internal_asset, AssetApp, embedded_asset},
+    window::{PrimaryWindow, Window}, asset::{AssetApp, embedded_asset},
 };
 use bevy_svg::prelude::Svg;
 

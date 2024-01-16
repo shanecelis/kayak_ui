@@ -78,16 +78,18 @@ pub(crate) fn process_events(world: &mut World) {
             }
 
             for event in custom_event_char_input.0.read(&char_input_events) {
-                input_events.push(InputEvent::CharEvent { c: event.char });
+                for c in event.char.chars() {
+                    input_events.push(InputEvent::CharEvent { c });
+                }
             }
 
             for event in custom_event_keyboard.0.read(&keyboard_input_events) {
-                if let Some(key_code) = event.key_code {
-                    input_events.push(InputEvent::Keyboard {
-                        key: key_code,
-                        is_pressed: matches!(event.state, ButtonState::Pressed),
-                    });
-                }
+                let key_code = event.key_code;
+                input_events.push(InputEvent::Keyboard {
+                    key: key_code,
+                    is_pressed: matches!(event.state, ButtonState::Pressed),
+                });
+
             }
         },
         world,

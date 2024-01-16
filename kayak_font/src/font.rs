@@ -5,7 +5,7 @@ use bevy::{
     prelude::*,
     prelude::Handle,
     reflect::TypePath,
-    render::texture::Image,
+    render::{texture::Image, render_resource::AsBindGroup},
 };
 use unicode_segmentation::UnicodeSegmentation;
 
@@ -15,7 +15,7 @@ use crate::{
 };
 
 #[cfg(feature = "bevy_renderer")]
-#[derive(Debug, Clone, TypePath, PartialEq, Asset)]
+#[derive(Debug, Clone, TypePath, PartialEq, Asset, AsBindGroup)]
 pub struct KayakFont {
     pub sdf: Sdf,
     pub image: ImageType,
@@ -25,7 +25,7 @@ pub struct KayakFont {
 }
 
 #[cfg(feature = "bevy_renderer")]
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, TypePath, PartialEq)]
 pub enum ImageType {
     Atlas(Handle<Image>),
     Array(Handle<Image>),

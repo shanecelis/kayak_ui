@@ -9,7 +9,7 @@ use bevy::render::render_phase::{
 };
 use bevy::render::render_resource::{
     CachedRenderPipelineId, DynamicUniformBuffer, ShaderType, SpecializedRenderPipeline,
-    SpecializedRenderPipelines,
+    SpecializedRenderPipelines, binding_types::{uniform_buffer, texture_2d, texture_2d_array, sampler}, BindGroupLayoutEntries,
 };
 use bevy::render::view::ViewTarget;
 use bevy::utils::FloatOrd;
@@ -97,85 +97,37 @@ impl FromWorld for UnifiedPipeline {
         let unified_shader: Handle<Shader> = asset_server.load("embedded://kayak_ui/render/unified/shaders/shader.wgsl");
         let bindings_shader: Handle<Shader> = asset_server.load("embedded://kayak_ui/render/unified/shaders/bindings.wgsl");
         let sample_quad_shader: Handle<Shader> = asset_server.load("embedded://kayak_ui/render/unified/shaders/sample_quad.wgsl");
-        let view_layout = render_device.create_bind_group_layout(&BindGroupLayoutDescriptor {
-            entries: &[
-                BindGroupLayoutEntry {
-                    binding: 0,
-                    visibility: ShaderStages::VERTEX | ShaderStages::FRAGMENT,
-                    ty: BindingType::Buffer {
-                        ty: BufferBindingType::Uniform,
-                        has_dynamic_offset: true,
-                        min_binding_size: Some(UIViewUniform::min_size()),
-                    },
-                    count: None,
-                },
-                BindGroupLayoutEntry {
-                    binding: 1,
-                    visibility: ShaderStages::VERTEX_FRAGMENT,
-                    ty: BindingType::Buffer {
-                        ty: BufferBindingType::Uniform,
-                        has_dynamic_offset: false,
-                        min_binding_size: Some(GlobalsUniform::min_size()),
-                    },
-                    count: None,
-                },
-            ],
-            label: Some("ui_view_layout"),
-        });
+        let view_layout = render_device.create_bind_group_layout(
+            "ui_view_layout",
+            &BindGroupLayoutEntries::sequential(
+                ShaderStages::VERTEX | ShaderStages::FRAGMENT,
+                (
+                    uniform_buffer::<UIViewUniform>(true),
+                    uniform_buffer::<GlobalsUniform>(false).visibility(ShaderStages::VERTEX_FRAGMENT),
+                )
+            )
+        );
 
-        let types_layout = render_device.create_bind_group_layout(&BindGroupLayoutDescriptor {
-            entries: &[BindGroupLayoutEntry {
-                binding: 0,
-                visibility: ShaderStages::VERTEX | ShaderStages::FRAGMENT,
-                ty: BindingType::Buffer {
-                    ty: BufferBindingType::Uniform,
-                    has_dynamic_offset: true,
-                    // TODO: change this to ViewUniform::std140_size_static once crevice fixes this!
-                    // Context: https://github.com/LPGhatguy/crevice/issues/29
-                    min_binding_size: BufferSize::new(16),
-                },
-                count: None,
-            }],
-            label: Some("ui_types_layout"),
-        });
+        let types_layout = render_device.create_bind_group_layout(
+            "ui_types_layout",
+            &BindGroupLayoutEntries::single(
+                ShaderStages::VERTEX | ShaderStages::FRAGMENT,
+uniform_buffer::<QuadType>(true),
+        ));
 
-        let image_layout = render_device.create_bind_group_layout(&BindGroupLayoutDescriptor {
-            entries: &[
-                BindGroupLayoutEntry {
-                    binding: 0,
-                    visibility: ShaderStages::FRAGMENT,
-                    ty: BindingType::Texture {
-                        multisampled: false,
-                        sample_type: TextureSampleType::Float { filterable: true },
-                        view_dimension: TextureViewDimension::D2,
-                    },
-                    count: None,
-                },
-                BindGroupLayoutEntry {
-                    binding: 1,
-                    visibility: ShaderStages::FRAGMENT,
-                    ty: BindingType::Sampler(SamplerBindingType::Filtering),
-                    count: None,
-                },
-                BindGroupLayoutEntry {
-                    binding: 2,
-                    visibility: ShaderStages::FRAGMENT,
-                    ty: BindingType::Texture {
-                        multisampled: false,
-                        sample_type: TextureSampleType::Float { filterable: true },
-                        view_dimension: TextureViewDimension::D2Array,
-                    },
-                    count: None,
-                },
-                BindGroupLayoutEntry {
-                    binding: 3,
-                    visibility: ShaderStages::FRAGMENT,
-                    ty: BindingType::Sampler(SamplerBindingType::Filtering),
-                    count: None,
-                },
-            ],
-            label: Some("image_layout"),
-        });
+        let image_layout = render_device.create_bind_group_layout(
+            "image_layout",
+            &BindGroupLayoutEntries::sequential(
+                ShaderStages::FRAGMENT,
+                (
+
+                        texture_2d(TextureSampleType::Float { filterable: true }),
+                        sampler(SamplerBindingType::Filtering),
+                        texture_2d_array(TextureSampleType::Float { filterable: true }),
+                        sampler(SamplerBindingType::Filtering),
+                )
+                )
+        );
 
         let empty_font_texture = FontTextureCache::get_empty(&render_device);
 
@@ -1441,13 +1393,13 @@ pub struct SetUIViewBindGroup<T, const I: usize> {
 }
 impl<T: PhaseItem, const I: usize> RenderCommand<T> for SetUIViewBindGroup<T, I> {
     type Param = ();
-    type ViewWorldQuery = (Read<UIViewUniformOffset>, Read<UIViewBindGroup>);
-    type ItemWorldQuery = ();
+    type ViewData = (Read<UIViewUniformOffset>, Read<UIViewBindGroup>);
+    type ItemData = ();
 
     #[inline]
     fn render<'w>(
         _item: &T,
-        (view_uniform, ui_view_bind_group): ROQueryItem<'w, Self::ViewWorldQuery>,
+        (view_uniform, ui_view_bind_group): ROQueryItem<'w, Self::ViewData>,
         _: (),
         _: SystemParamItem<'w, '_, Self::Param>,
         pass: &mut TrackedRenderPass<'w>,
@@ -1465,13 +1417,13 @@ pub struct DrawUIDraw<T> {
 impl<T: PhaseItem + TransparentUIGeneric> RenderCommand<T> for DrawUIDraw<T> {
     type Param = (SRes<QuadMeta>, SRes<UnifiedPipeline>, SRes<ImageBindGroups>);
 
-    type ViewWorldQuery = Read<UIExtractedView>;
-    type ItemWorldQuery = Read<QuadBatch>;
+    type ViewData = Read<UIExtractedView>;
+    type ItemData = Read<QuadBatch>;
 
     fn render<'w>(
         item: &T,
-        view: bevy::ecs::query::ROQueryItem<'w, Self::ViewWorldQuery>,
-        batch: bevy::ecs::query::ROQueryItem<'w, Self::ItemWorldQuery>,
+        view: bevy::ecs::query::ROQueryItem<'w, Self::ViewData>,
+        batch: bevy::ecs::query::ROQueryItem<'w, Self::ItemData>,
         param: bevy::ecs::system::SystemParamItem<'w, '_, Self::Param>,
         pass: &mut TrackedRenderPass<'w>,
     ) -> RenderCommandResult {

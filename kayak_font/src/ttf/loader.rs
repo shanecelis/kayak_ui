@@ -1,7 +1,8 @@
 #![allow(clippy::needless_question_mark, clippy::question_mark)]
 use bevy::{
     asset::{AssetLoader, LoadContext, io::{Reader, AssetSourceBuilders}, AsyncReadExt, AssetServer},
-    render::render_resource::{Extent3d, TextureFormat},
+
+    render::{render_resource::{Extent3d, TextureFormat}, render_asset::RenderAssetPersistencePolicy},
     utils::{BoxedFuture, HashMap},
 };
 
@@ -250,6 +251,7 @@ impl AssetLoader for TTFLoader {
                 bevy::render::render_resource::TextureDimension::D2,
                 image_bytes,
                 TextureFormat::Rgba8Unorm,
+                RenderAssetPersistencePolicy::Unload,
             );
             image.reinterpret_stacked_2d_as_array(char_count);
             let labeled_asset = load_context.begin_labeled_asset();

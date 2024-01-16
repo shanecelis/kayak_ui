@@ -260,6 +260,7 @@ define_styles! {
     ///   .with_style(&style_b);
     /// ```
     #[derive(Component, Reflect, Debug, Default, Clone, PartialEq)]
+    #[reflect(from_reflect = true)]
     #[reflect(Component)]
     pub struct KStyle {
         /// The background color of this widget
@@ -781,7 +782,7 @@ fn hsv_to_rgb(from: &Vec3) -> Color {
 
     res += Vec4::new(m, m, m, 0.0);
 
-    Color::from(res)
+    Color::rgba(res.x, res.y, res.z, res.w)
 }
 
 fn hsv_lerp(from: &Color, to: &Color, amount: f32) -> Color {

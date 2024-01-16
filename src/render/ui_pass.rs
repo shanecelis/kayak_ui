@@ -9,7 +9,7 @@ use bevy::render::render_phase::{
 use bevy::render::render_resource::{CachedRenderPipelineId, RenderPassColorAttachment};
 use bevy::render::{
     render_graph::{Node, NodeRunError, RenderGraphContext},
-    render_resource::{LoadOp, Operations, RenderPassDescriptor},
+    render_resource::{LoadOp, Operations, RenderPassDescriptor, StoreOp},
     renderer::RenderContext,
     view::{ExtractedView, ViewTarget},
 };
@@ -236,10 +236,12 @@ impl Node for MainPassUINode {
                             resolve_target: None,
                             ops: Operations {
                                 load: LoadOp::Clear(Color::rgba(0.0, 0.0, 0.0, 0.0).into()),
-                                store: true,
+                                store: StoreOp::Store,
                             },
                         })],
                         depth_stencil_attachment: None,
+                        timestamp_writes: None,
+                        occlusion_query_set: None,
                     };
 
                     let mut tracked_pass =
@@ -261,11 +263,10 @@ impl Node for MainPassUINode {
         {
             let pass_descriptor = RenderPassDescriptor {
                 label: Some("main_transparent_pass_UI"),
-                color_attachments: &[Some(target.get_unsampled_color_attachment(Operations {
-                    load: LoadOp::Load,
-                    store: true,
-                }))],
+                color_attachments: &[Some(target.get_unsampled_color_attachment())],
                 depth_stencil_attachment: None,
+                timestamp_writes: None,
+                occlusion_query_set: None,
             };
             let mut tracked_pass = render_context.begin_tracked_render_pass(pass_descriptor);
             transparent_phase.render(&mut tracked_pass, world, view_entity);

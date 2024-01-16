@@ -7,11 +7,12 @@ use bevy::{
 #[derive(Component, Default, Debug, Clone, Copy)]
 pub struct CameraUIKayak;
 impl ExtractComponent for CameraUIKayak {
-    type Query = &'static Self;
+    // type Query = &'static Self;
+    type Data = &'static Self;
     type Filter = With<Camera>;
     type Out = CameraUIKayak;
 
-    fn extract_component(item: QueryItem<Self::Query>) -> Option<Self::Out> {
+    fn extract_component(item: QueryItem<'_, Self::Data>) -> Option<Self::Out> {
         Some(*item)
     }
 }

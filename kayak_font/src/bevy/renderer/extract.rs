@@ -46,6 +46,11 @@ pub(crate) fn extract_fonts(
                 let id = asset_server.get_id_handle(*id).unwrap();
                 changed_assets.insert(id.clone_weak());
             }
+            AssetEvent::Unused { id } => {
+                let id = asset_server.get_id_handle(*id).unwrap();
+                changed_assets.insert(id.clone_weak());
+            }
+
         }
     }
 
